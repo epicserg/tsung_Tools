@@ -1,9 +1,15 @@
 <project name="My Application" default="deploy" basedir=".">
 
- 
-	
+
 	<target name="build">
+        <javac destdir="WebContent/WEB-INF/classes">
+            <src path="src"/>
+            <classpath>
+              <pathelement location="C:\javaTools\apache-tomcat-7.0.28\lib\servlet-api.jar"/>
+            </classpath>
+        </javac>
 		<zip basedir="WebContent" destfile="jungo.war"></zip>
+		
 	</target>
 	<target name="deploy" depends="build">
 		<copy file="jungo.war" todir="C:\javaTools\apache-tomcat-7.0.28\webapps" />
