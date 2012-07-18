@@ -2,9 +2,6 @@ package ee.webmedia.tsung;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -17,12 +14,14 @@ import javax.servlet.http.HttpServletResponse;
 
 public class TsungServlet extends HttpServlet {
   private static final long serialVersionUID = 1L;
+  protected boolean testRunning;
+  protected int entries = 0;
 
   /**
    * Default constructor.
    */
   public TsungServlet() {
-    // TODO Auto-generated constructor stub
+    testRunning = false;
   }
 
   /**
@@ -33,74 +32,125 @@ public class TsungServlet extends HttpServlet {
 
   }
 
-  protected Map generateRequestMap(HttpServletRequest request) {
-    Map<String, String> requestPar = new HashMap<String, String>();
-    requestPar.put("ip", request.getParameter("ip"));
-    requestPar.put("login", request.getParameter("login"));
-    requestPar.put("userNumber", request.getParameter("userNumber"));
-    requestPar.put("scenario", request.getParameter("scenario"));
-    return requestPar;
-  }
-
-  protected boolean validateInput(Map requestPar) {
-    Iterator it = requestPar.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry pairs = (Map.Entry) it.next();
-      if (pairs.getValue() == "")
-        return false;
-    }
-    return true;
-  }
-
-  protected void printInfo(Map requestPar, PrintWriter out) {
-    out.println("You have enterd Ip :" + requestPar.get("ip") + "<br />");
-    out.println("Login was :" + requestPar.get("login") + "<br />");
-    out.println("Number of users " + requestPar.get("userNumber") + "<br />");
-    out.println("scenario selected :" + requestPar.get("scenario") + "<br />");
-  }
-
   /**
    * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
    */
   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    response.setCharacterEncoding("UTF-8");
-    response.setContentType("text/html");
-    Map<String, String> requestPar = generateRequestMap(request);
+    String userAction = request.getQueryString();
+    if (userAction != null)
+      executeAction(userAction);
     PrintWriter out = response.getWriter();
-    out.println("request was :" + request.toString() + "<br />");
-    printInfo(requestPar, out);
-    boolean fastNodeEnabled = (request.getParameter("FastNode") != null);
-    out.println("fast node enabled :" + fastNodeEnabled);
-    if (!validateInput(requestPar)) {
-      out.println("Some info was incorect , please check your input " + "<br />");
-    }
+    setButtons(out, request);
+    entries++;
 
-    else
-      setButtons(requestPar, out, request);
   }
 
-  protected void setButtons(Map requestPar, PrintWriter out, HttpServletRequest request) {
-    out.println("Select your action" + "<br />");
+  protected void startTest() {
+    System.out.println("starting test");
+    Runtime rt = Runtime.getRuntime();
+    try {
+      rt.exec("echo lol");
+      // rt.exec("TODO type your tsung start script");
+      setTestRunning(true);
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
+    } finally {
+      // TODO check if test has started
+      setTestRunning(true);
+    }
+  }
 
-    String form = "<div>";
-    // "<div class=\"send-sms-phone\"><input class='clientNumber' type=\"text\" name=\"phone\" /></div>";
-    form += "<p><button type=\"button\" class=\"start\"><span><strong>";
-    form += "Start";
-    form += "</strong></span></button></p>";
-    form += "<p><button type=\"button\" class=\"stop\"><span><strong>";
-    form += "Stop";
-    form += "</strong></span></button></p>";
+  protected void stopTest() {
+    System.out.println("stopping test");
+    Runtime rt = Runtime.getRuntime();
+    try {
+      rt.exec("echo lol");
+      // rt.exec("TODO type your tsung stop script");
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
+    } finally {
+      setTestRunning(false);
+    }
+  }
 
-    form += "<p><button type=\"button\" class=\"log\"><span><strong>";
-    form += "Log";
-    form += "</strong></span></button></p>";
+  protected void openFile() {
 
-    form += "<p><button type=\"button\" class=\"show\"><span><strong>";
-    form += "Show Scripts";
+  }
+
+  protected void generateReport() {
+    stopTest();
+    System.out.println("generating report");
+    Runtime rt = Runtime.getRuntime();
+    openFile();
+    try {
+      rt.exec("notepad");
+      // rt.exec("TODO type your tsung generate report script");
+      // TODO open external html
+    } catch (IOException ioe) {
+      ioe.printStackTrace();
+    }
+  }
+
+  protected void editXml() {
+    System.out.println("editing XML");
+    // TODO Stream xml over internet and ask browser for changes
+  }
+
+  protected void executeAction(String userAction) {
+    System.out.println("executing action " + userAction);
+    if (userAction.equals("action=start")) {
+      startTest();
+    }
+    if (userAction.equals("action=stop")) {
+      stopTest();
+    }
+    if (userAction.equals("action=report")) {
+      generateReport();
+    }
+    if (userAction.equals("action=edit")) {
+      editXml();
+    }
+
+  }
+
+  synchronized void setTestRunning(boolean bo) {
+    this.testRunning = bo;
+  }
+
+  protected void setButtons(PrintWriter out, HttpServletRequest req) {
+
+    out.println("<br/> Select your action" + "<br /> ");
+
+    String form = "<div> times server entered before ";
+    form += entries;
+    form += "  test running :" + this.testRunning;
+    form += " </br>";
+    form += "action selected " + req.getQueryString();
+    if (!testRunning) {
+      form += "<form name='frm' method='post' action='TsungServlet?action=start'> ";
+      form += "<p><input type='submit' name='Start' value='Start'><span><strong>";
+      form += "</strong></span></button></p>";
+      form += "</form>";
+    }
+    else {
+      form += "<form name='frm' method='post' action='TsungServlet?action=stop'> ";
+      form += "<p><input type='submit' name='Stop' value='Stop'><span><strong>";
+      form += "</strong></span></button></p>";
+      form += "</form>";
+    }
+    form += "<form name='frm' method='post' action='TsungServlet?action=report'> ";
+    form += "<p><input type='submit' name='Report' value='Report'><span><strong>";
     form += "</strong></span></button></p>";
+    form += "</form>";
+
+    form += "<form name='frm' method='post' action='TsungServlet?action=edit'> ";
+    form += "<p><input type='submit' name='Edit' value='Edit'><span><strong>";
+    form += "</strong></span></button></p>";
+    form += "</form>";
 
     form += "</div>";
     form += "</form>";
+    form += "<script type='text/javascript' src='Javascript/jQuery.js'></script>";
     form += "<script type='text/javascript' src='Javascript/Connector.js'></script>";
     out.print(form);
 
