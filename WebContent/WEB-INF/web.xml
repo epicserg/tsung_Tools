@@ -4,8 +4,6 @@
     <welcome-file>/serverView.jsp</welcome-file>
   </welcome-file-list>
   <servlet>
-    <javaee:description></javaee:description>
-    <javaee:display-name>TsungServlet</javaee:display-name>
     <servlet-name>TsungServlet</servlet-name>
     <servlet-class>ee.webmedia.tsung.TsungServlet</servlet-class>
   </servlet>
