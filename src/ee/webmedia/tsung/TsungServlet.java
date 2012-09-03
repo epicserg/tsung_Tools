@@ -17,7 +17,8 @@ import org.slf4j.LoggerFactory;
 
 public class TsungServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static final String serverName = "tsung.webmedia.int";
+	//
+	private static final String serverName = "localhost";
 	protected boolean isTestRunning;
 	protected boolean showReports;
 	protected boolean editConfig;
